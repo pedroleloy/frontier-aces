@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { TopBar } from '../components/hud/TopBar';
 import { Button } from '../components/ui/Button';
-import { SELIC_ANNUAL_RATE, SELIC_DAILY_RATE, useEconomyStore } from '../stores/useEconomyStore';
+import {
+  SELIC_ANNUAL_RATE,
+  SELIC_COMPOUND_WINDOW_DAYS,
+  SELIC_DAILY_RATE,
+  useEconomyStore,
+} from '../stores/useEconomyStore';
 import { formatMoney } from '../utils/format';
 import { audio } from '../services/audio';
 
@@ -27,15 +32,23 @@ export function BankScreen({ onBack }: Props) {
 
   const [amount, setAmount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
 
   function handleDeposit() {
     setError(null);
+    setHint(null);
     if (amount <= 0) {
       setError('Informe um valor maior que zero.');
       return;
     }
     if (depositToBank(amount)) {
       audio.play('cash');
+      const projection = Math.round(amount * SELIC_DAILY_RATE);
+      setHint(
+        projection > 0
+          ? `Depósito realizado. A cada vez que você "Dormir" na cidade, este saldo renderá juros (~${formatMoney(projection)} no próximo descanso para este depósito).`
+          : 'Depósito realizado. Os juros são creditados toda vez que você "Dormir" na cidade.',
+      );
       setAmount(0);
     } else {
       setError('Bankroll insuficiente.');
@@ -43,6 +56,7 @@ export function BankScreen({ onBack }: Props) {
   }
   function handleWithdraw() {
     setError(null);
+    setHint(null);
     if (amount <= 0) {
       setError('Informe um valor maior que zero.');
       return;
@@ -87,16 +101,23 @@ export function BankScreen({ onBack }: Props) {
             <div className="text-xs text-parchment-200/70">
               Protegido. Saque a qualquer momento.
             </div>
-            <div className="text-xs text-bronze-200 mt-2 border-t border-bronze-300/20 pt-2">
-              💰 Rendimento SELIC: <strong>{(SELIC_ANNUAL_RATE * 100).toFixed(2)}% a.a.</strong>{' '}
-              ({(SELIC_DAILY_RATE * 100).toFixed(4)}% ao dia, capitalização diária).
-              {bank > 0 && (
-                <span className="block mt-1 text-parchment-200/80">
-                  Estimativa próximo dia:{' '}
-                  <span className="font-mono text-bronze-200">
+            <div className="mt-2 border-t border-bronze-300/20 pt-2 space-y-1">
+              <div className="text-xs text-bronze-200">
+                💰 <strong>Rendimento SELIC:</strong> {(SELIC_ANNUAL_RATE * 100).toFixed(2)}% a.a.
+                aplicado em {SELIC_COMPOUND_WINDOW_DAYS} dias de jogo
+                ({(SELIC_DAILY_RATE * 100).toFixed(2)}% ao dia, capitalização composta).
+              </div>
+              {bank > 0 ? (
+                <div className="text-xs text-parchment-200/90">
+                  Próximo crédito (ao <em className="text-bronze-200">Dormir</em> na cidade):{' '}
+                  <span className="font-mono text-bronze-200 text-sm">
                     +{formatMoney(Math.round(bank * SELIC_DAILY_RATE))}
                   </span>
-                </span>
+                </div>
+              ) : (
+                <div className="text-xs italic text-parchment-200/60">
+                  Deposite algo e durma na cidade para ver o rendimento.
+                </div>
               )}
             </div>
           </div>
@@ -125,6 +146,11 @@ export function BankScreen({ onBack }: Props) {
           {error && (
             <div className="text-oxblood-300 text-sm bg-oxblood-900/30 px-3 py-2 rounded border border-oxblood-500/30">
               {error}
+            </div>
+          )}
+          {hint && (
+            <div className="text-bronze-200 text-sm bg-bronze-900/30 px-3 py-2 rounded border border-bronze-300/30">
+              {hint}
             </div>
           )}
           <div className="flex flex-wrap gap-2">

@@ -6,20 +6,24 @@ import { LEVEL_MULTIPLIERS, PROPERTY_TEMPLATES, upgradeCost } from '../data/prop
 /* -----------------------------------------------------------------------------
  * SELIC daily interest on bank deposits
  *
- * Reference rate as of May 2026: 14,75% a.a. (post-COPOM cut to 14.50% on
- * 29/Apr/2026, with another decision in early May). We use the conservative
- * 14,75% nominal annual rate compounded daily (252 business days, matching
- * how the actual SELIC is annualized in Brazilian fixed income).
+ * Reference rate (May 2026): 14,75% a.a.
  *
- *   (1 + 0.1475)^(1/252) - 1  ≈  0.000545 / dia útil  (~0.0545% ao dia)
+ * For game pacing we compress the compounding window to 14 in-game days so
+ * the interest is visible and rewards short-term play. A literal annualized
+ * calc (over 252 business days, as Brazilian fixed income actually uses)
+ * yields ~0.055%/dia, which rounds to zero on small balances and feels dead.
  *
- * In-game days are calendar-like (you "sleep" once per stop in a city), so
- * each in-game day counts as one compounding period. Easy to tune later — if
- * you want the equivalent calendar-day rate instead use:
- *   (1 + 0.1475)^(1/365) - 1  ≈  0.000377 / dia
+ *   (1 + 0.1475)^(1/14) - 1  ≈  0.00993 / dia  (~0.99% ao dia)
+ *
+ * Tweak `SELIC_COMPOUND_WINDOW_DAYS` to make the yield faster or slower.
+ * Interest is applied once per in-game day (when the player "Dorme" in the
+ * city — that's the time tick), so depositing and immediately checking the
+ * bank screen won't show anything new until the next sleep.
  * --------------------------------------------------------------------------- */
 export const SELIC_ANNUAL_RATE = 0.1475;
-export const SELIC_DAILY_RATE = Math.pow(1 + SELIC_ANNUAL_RATE, 1 / 252) - 1;
+export const SELIC_COMPOUND_WINDOW_DAYS = 14;
+export const SELIC_DAILY_RATE =
+  Math.pow(1 + SELIC_ANNUAL_RATE, 1 / SELIC_COMPOUND_WINDOW_DAYS) - 1;
 
 export interface DailyIncomeResult {
   propertyIncome: number;
