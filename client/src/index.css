@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Theme variables (dark by default — high-contrast western saloon) ===== */
+:root {
+  --color-bg: #1a120c;
+  --color-bg-deep: #0d0805;
+  --color-frame: #c79a3e;
+  --color-accent: #8e2f29;
+  --color-text: #fdf9ef;
+  --color-text-muted: #b8a684;
+
+  /* Felt gradient used on poker tables */
+  --felt-gradient:
+    radial-gradient(ellipse at center, #1f6b4a 0%, #15533a 45%, #0f3e2c 80%, #0a2e21 100%);
+}
+
+@media (prefers-color-scheme: light) {
+  /* Keep dark even in light pref — this is a saloon, not a spreadsheet. */
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: theme('fontFamily.body');
+  font-feature-settings: 'liga' 1, 'kern' 1;
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(199, 154, 62, 0.06), transparent 40%),
+    radial-gradient(circle at 80% 100%, rgba(142, 47, 41, 0.08), transparent 50%);
+  background-attachment: fixed;
+  overscroll-behavior: none;
+}
+
+/* ===== Re-usable component classes ===== */
+@layer components {
+  .frame-bronze {
+    @apply relative rounded-md ring-1 ring-bronze-300/40 shadow-inset-frame;
+    background:
+      linear-gradient(180deg, rgba(20, 12, 8, 0.85), rgba(36, 22, 14, 0.95)),
+      theme('backgroundImage.paper-grain');
+  }
+  .heading {
+    @apply font-display tracking-wide;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2
+           font-display tracking-wider uppercase text-sm
+           rounded-sm border border-bronze-300/60
+           bg-gradient-to-b from-bronze-700 to-bronze-800
+           text-parchment-50 shadow-md
+           transition-transform duration-150 active:scale-95
+           hover:from-bronze-600 hover:to-bronze-700
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bronze-300;
+  }
+  .btn-primary {
+    @apply bg-gradient-to-b from-oxblood-500 to-oxblood-700 border-oxblood-300/60
+           hover:from-oxblood-400 hover:to-oxblood-600;
+  }
+  .btn-ghost {
+    @apply bg-transparent border-bronze-300/30 text-parchment-100
+           hover:bg-bronze-800/30;
+  }
+  .panel {
+    @apply frame-bronze p-4 md:p-6;
+  }
+  .divider-stars::before,
+  .divider-stars::after {
+    content: '✦';
+    @apply mx-3 text-bronze-300/60;
+  }
+}
+
+/* ===== Card vintage shadow ===== */
+.card-shadow {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 8px 18px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Accessibility: respect reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

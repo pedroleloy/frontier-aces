@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+coverage
+.env
+.env.local
+.DS_Store
+*.log
+server/data/*.sqlite
+server/data/*.sqlite-journal
+server/data/*.db
+server/data/*.db-journal
+server/data/*.db-wal
+server/data/*.db-shm
+.vercel
+.vite
